@@ -1,13 +1,21 @@
 # Build frontend
 FROM node:20-bullseye AS web
 WORKDIR /app
+# Copy package manifests first for better Docker caching
+COPY frontend/package*.json ./
+# Install dependencies (dev deps included so Vite is available)
+RUN if [ -f package-lock.json ]; then npm ci --include=dev; else npm install --include=dev; fi
+# Now copy the rest and build
 COPY frontend/ ./
 RUN npm run build
 
 # API runtime with LibreOffice for conversions
 FROM python:3.11-slim
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends     libreoffice     fonts-dejavu     && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libreoffice \
+    fonts-dejavu \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv/api
 COPY backend/ ./
