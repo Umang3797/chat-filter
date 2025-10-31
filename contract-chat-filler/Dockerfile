@@ -2,7 +2,7 @@
 FROM node:20-bullseye AS web
 WORKDIR /app
 COPY frontend/ ./
-RUN npm ci && npm run build
+RUN npm run build
 
 # API runtime with LibreOffice for conversions
 FROM python:3.11-slim
